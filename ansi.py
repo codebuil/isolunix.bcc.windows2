@@ -5,16 +5,47 @@ def save_to_file():
     filename = filename_entry.get()
     x_value = x_entry.get()
     y_value = y_entry.get()
+    
     input_text = input_text_area.get("1.0", "end-1c")  # Pega o texto da área de entrada
 
     # Função para formatar o texto com as cores
-    def format_text(text, color):
-        formatted_text = ""
+    def format_text(text):
+        bcolor=0
+        ccolor=0
+        ints=0
+        strs=""
+        formatted_text =  f"\033[40;37m"
         for char in text:
-            formatted_text += f"\x1b[38;5;{color}m{char}\x1b[0m"
+            if ints > 0:
+                if char == '\\':
+                    formatted_text += f"{char}"
+                if char >= '0':
+                    if char <= '9':
+                        strs+=f"{char}"
+                        ints=ints+1
+                if char >= 'a':
+                    if char <= 'f':
+                        strs+=f"{char}"
+                        ints=ints+1
+                if char >= 'A':
+                    if char <= 'F':
+                        strs+=f"{char}"
+                        ints=ints+1
+
+            if ints == 0:
+                if char == '\\':
+                    ints=1
+                else:
+                    formatted_text += f"{char}"
+            if ints > 2:
+                bcolor=((int(strs,16) & 0xF0) >> 4)+40
+                ccolor=((int(strs,16) & 0xF))+30
+                formatted_text += f"\033[{bcolor};{ccolor}m"
+                ints=0
+            
         return formatted_text
 
-    formatted_text = format_text(input_text, 0xf0)  # 15 é a cor inicial (0x0f)
+    formatted_text = format_text(input_text)  
 
     # Salva o texto formatado no arquivo
     with open(filename, 'w') as file:
